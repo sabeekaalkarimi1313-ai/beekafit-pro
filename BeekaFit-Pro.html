@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>BeekaFit Pro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..900&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: phone-first app shell, sticky header, tabbed views, fixed bottom tab bar */
+:root{
+  --bg:#F3F5F4; --surface:#FFFFFF; --ink:#12201D; --muted:#5B6B67; --line:#D9E0DD;
+  --accent:#F26B1D; --accent-ink:#FFFFFF; --teal:#0F6E64; --good:#1B9E5A; --bad:#D63B2F; --warn:#C98A00;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1513; --surface:#17211E; --ink:#E7EEEB; --muted:#9AABA6; --line:#2A3733;
+  --accent:#FF8240; --accent-ink:#1A0D05; --teal:#4FC2B4; --good:#3CCB80; --bad:#FF6B5E; --warn:#F0B53A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1513; --surface:#17211E; --ink:#E7EEEB; --muted:#9AABA6; --line:#2A3733;
+  --accent:#FF8240; --accent-ink:#1A0D05; --teal:#4FC2B4; --good:#3CCB80; --bad:#FF6B5E; --warn:#F0B53A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;margin:0;-webkit-text-size-adjust:100%;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 calc(84px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 10px;border-bottom:1px solid var(--line)}
+.brand{font-family:var(--f-display);font-weight:900;font-stretch:80%;font-size:28px;letter-spacing:-.01em;text-transform:uppercase;line-height:1}
+.brand span{color:var(--accent)}
+.weight{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.weight input{width:64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h2{font-weight:800;font-stretch:85%;font-size:32px;text-transform:uppercase;letter-spacing:-.005em}
+h3{font-weight:700;font-size:20px}
+.lede{color:var(--muted);margin:4px 0 0;max-width:62ch}
+.eyebrow{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+[hidden]{display:none!important}
+.pager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:flex-start}
+.pager::-webkit-scrollbar{display:none}
+section.view{flex:0 0 100%;width:100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;gap:16px;padding-block:18px 24px;padding-inline:2px}
+.dots{display:flex;justify-content:center;gap:6px;padding-block:8px 0}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent);width:22px;border-radius:4px}
+.swipehint{text-align:center;font-size:13px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+button,.btn{font:inherit;font-weight:700;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;cursor:pointer;min-height:44px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.danger{border-color:var(--bad);color:var(--bad)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+input,select{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+label{font-size:15px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;min-width:96px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:4/3;background:#0B1210;border-radius:14px;overflow:hidden}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage .mirror{transform:scaleX(-1)}
+.stage .msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;color:#C9D6D2;padding:20px}
+.stage .msg strong{color:#fff;font-family:var(--f-display);font-size:20px}
+.frameguide{position:absolute;inset:8% 28%;border:2px dashed rgba(255,255,255,.35);border-radius:999px 999px 20px 20px;pointer-events:none}
+.hud{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.repbox{background:rgba(10,18,16,.78);color:#fff;border-radius:12px;padding:6px 14px;text-align:center}
+.repbox .n{font-family:var(--f-display);font-weight:900;font-stretch:75%;font-size:56px;line-height:1}
+.repbox .l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#BFD0CB}
+.cue{background:rgba(10,18,16,.78);color:#fff;border-radius:12px;padding:8px 12px;font-weight:700;max-width:60%;border-left:5px solid #888}
+.cue.good{border-left-color:#3CCB80}.cue.bad{border-left-color:#FF6B5E}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:460px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg)}
+.stat .v{font-family:var(--f-mono);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+.stat .k{font-size:13px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.note{font-size:15px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.pill.on{color:var(--good);border-color:var(--good)}
+.pill.sample{color:var(--warn);border-color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.plan{display:flex;flex-direction:column;gap:10px}
+.plan ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.plan .meta{display:flex;gap:8px;flex-wrap:wrap}
+.chart{display:flex;align-items:flex-end;gap:8px;height:150px;padding-top:18px;border-bottom:1px solid var(--line)}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;min-width:0}
+.bar i{display:block;width:100%;max-width:38px;background:var(--teal);border-radius:6px 6px 0 0;min-height:2px}
+.bar.today i{background:var(--accent)}
+.bar b{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:500}
+.bar small{font-size:11px;color:var(--muted)}
+.chartlabels{display:flex;gap:8px}.chartlabels span{flex:1;text-align:center;font-size:11px;color:var(--muted)}
+.road{display:flex;flex-direction:column;gap:0}
+.phase{display:grid;grid-template-columns:28px 1fr;gap:12px;padding-block:12px;border-bottom:1px solid var(--line)}
+.phase:last-child{border-bottom:0}
+.dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--muted)}
+.phase.done .dot{background:var(--good);border-color:var(--good);color:var(--surface)}
+.phase ul{margin:6px 0 0;padding-left:18px}
+code{font-family:var(--f-mono);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
+  padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-block:6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav.tabs .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+nav.tabs button{border:0;background:transparent;min-height:58px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px;color:var(--muted);border-radius:10px}
+nav.tabs button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-current="page"]{color:var(--accent);background:var(--bg)}
+.foodcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.fcol{border-top:5px solid var(--line)}
+.fcol.eat{border-top-color:var(--good)}.fcol.limit{border-top-color:var(--warn)}.fcol.avoid{border-top-color:var(--bad)}
+.flist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.flist li{display:flex;flex-direction:column;gap:1px;border-bottom:1px solid var(--line);padding-bottom:7px}
+.flist li:last-child{border-bottom:0}
+.flist b{font-weight:700}.flist span{font-size:14px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;color:var(--surface)}
+.tag.eat{background:var(--good)}.tag.limit{background:var(--warn)}.tag.avoid{background:var(--bad)}
+.zh{font-family:var(--f-body);color:var(--muted);font-weight:400}
+.wbar{height:16px;border-radius:999px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.wbar i{display:block;height:100%;width:0;background:var(--teal);border-radius:999px;transition:width .3s}
+.wbar.full i{background:var(--good)}
+.ppg{position:relative;width:100%;height:110px;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ppg canvas{width:100%;height:100%;display:block}
+.bignum{font-family:var(--f-display);font-weight:900;font-stretch:75%;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.bignum small{font-family:var(--f-body);font-size:16px;font-weight:700;color:var(--muted);margin-left:4px}
+.bpcat{font-weight:700;padding:8px 12px;border-radius:10px;border-left:6px solid var(--line);background:var(--bg)}
+.bpcat.good{border-left-color:var(--good)}.bpcat.warn{border-left-color:var(--warn)}.bpcat.bad{border-left-color:var(--bad)}
+.disclaim{font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
+.stations{display:flex;flex-direction:column;gap:6px}
+.station{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-block:8px;font-size:16px}
+.station .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head><body>
+<div class="wrap">
+<header>
+  <div class="brand">Beeka<span>Fit</span> Pro</div>
+  <label class="weight" for="kg">Weight
+    <span class="row" style="gap:4px"><input id="kg" type="number" min="25" max="250" step="0.5" value="60"> kg</span>
+  </label>
+</header>
+<div class="dots" id="dots" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+<p class="swipehint">Swipe left or right to move between sections</p>
+<main class="pager" id="pager">
+
+<!-- TRAIN -->
+<section class="view" id="v-train">
+  <div>
+    <h2>AI Form Coach</h2>
+    <p class="lede">Prop your phone at hip height, step back until your whole body fits the frame, and start. The camera tracks your joints on the device. Nothing is uploaded.</p>
+  </div>
+  <div class="seg" role="group" aria-label="Exercise">
+    <button id="ex-squat" aria-pressed="true" data-ex="squat">Squats</button>
+    <button id="ex-pushup" aria-pressed="false" data-ex="pushup">Push-ups</button>
+    <button id="ex-jj" aria-pressed="false" data-ex="jj">Jumping jacks</button>
+  </div>
+  <div class="stage" id="stage">
+    <video id="video" class="mirror" playsinline muted></video>
+    <canvas id="overlay" class="mirror"></canvas>
+    <div class="frameguide" id="guide" hidden></div>
+    <div class="hud">
+      <div class="cue" id="cue">Ready when you are</div>
+      <div class="repbox"><div class="n" id="reps">0</div><div class="l">reps</div></div>
+    </div>
+    <div class="msg" id="stageMsg"><strong>Camera is off</strong><span id="stageMsgText">Press Start camera. Your browser will ask for permission.</span></div>
+  </div>
+  <div class="row">
+    <button class="primary" id="startCam">Start camera</button>
+    <label class="btn" for="vidFile" style="flex-direction:row;align-items:center;color:var(--ink);font-size:15px;font-weight:700">Analyze a video
+      <input id="vidFile" type="file" accept="video/*" hidden></label>
+    <button id="stopSave" disabled>Stop &amp; save</button>
+    <button id="voiceBtn" aria-pressed="true">Voice: on</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="v" id="sTime">0:00</div><div class="k">Time</div></div>
+    <div class="stat"><div class="v" id="sKcal">0</div><div class="k">kcal</div></div>
+    <div class="stat"><div class="v" id="sAngle">–</div><div class="k" id="sAngleK">Knee angle</div></div>
+    <div class="stat"><div class="v" id="sForm">–</div><div class="k">Good-form reps</div></div>
+  </div>
+  <p class="note" id="aiStatus">AI model loads when you start (about 5 MB, once).</p>
+  <div class="panel" id="vitals">
+    <div>
+      <h3>After-workout health check</h3>
+      <p class="note">Check your heart rate and blood pressure when you finish. Readings are saved with the date so you can compare over the weeks.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Heart rate method">
+      <button id="hr-cam" aria-pressed="true" data-hr="cam">Camera (finger)</button>
+      <button id="hr-man" aria-pressed="false" data-hr="man">Count by hand</button>
+    </div>
+    <div id="hrCamBox" class="panel" style="padding:12px;background:var(--bg)">
+      <p class="note" style="margin:0">Cover the <b>back camera and flash</b> fully with your fingertip. Press gently and keep still for 20 seconds.</p>
+      <div class="ppg"><canvas id="ppgCanvas" width="600" height="110"></canvas></div>
+      <div class="row" style="justify-content:space-between">
+        <div class="bignum" id="hrNum">–<small>bpm</small></div>
+        <div class="note" id="hrStatus" style="max-width:60%">Ready</div>
+      </div>
+      <div class="row"><button class="primary" id="hrStart">Measure heart rate</button><button id="hrStop" disabled>Stop</button></div>
+      <video id="ppgVideo" playsinline muted hidden></video>
+    </div>
+    <div id="hrManBox" class="panel" style="padding:12px;background:var(--bg)" hidden>
+      <p class="note" style="margin:0">Place two fingers on your wrist below the thumb, or on the side of your neck. Press Start and count every beat until it says stop.</p>
+      <div class="row" style="justify-content:space-between">
+        <div class="bignum" id="manTimer">15<small>sec</small></div>
+        <button class="primary" id="manStart">Start 15-second count</button>
+      </div>
+      <div class="row">
+        <label for="manBeats">Beats counted<input id="manBeats" type="number" min="5" max="60" step="1" placeholder="e.g. 28" style="width:120px"></label>
+        <button id="manSave">Save heart rate</button>
+      </div>
+      <p class="note" id="manOut" style="margin:0"></p>
+    </div>
+    <div>
+      <h3>Blood pressure</h3>
+      <p class="note">A phone camera cannot measure blood pressure accurately. Use a cuff BP monitor, rest for 5 minutes, then enter the numbers here.</p>
+    </div>
+    <div class="grid2">
+      <label for="bpSys">Upper number (systolic)<input id="bpSys" type="number" min="60" max="260" placeholder="e.g. 118"></label>
+      <label for="bpDia">Lower number (diastolic)<input id="bpDia" type="number" min="30" max="160" placeholder="e.g. 76"></label>
+    </div>
+    <div class="bpcat" id="bpCat">Enter both numbers to see the category.</div>
+    <div class="row"><button class="primary" id="bpSave">Save blood pressure</button></div>
+    <div>
+      <h3>Recent readings</h3>
+      <div class="scroll"><table><thead><tr><th>When</th><th>Reading</th><th>Result</th></tr></thead><tbody id="vitBody"></tbody></table></div>
+    </div>
+    <p class="disclaim">BeekaFit Pro is not a medical device. Right after exercise a heart rate of 100–160 bpm is normal and should drop within a few minutes. See a doctor if you get chest pain, dizziness or a BP of 180/120 or higher.</p>
+  </div>
+</section>
+
+<!-- RIDE -->
+<section class="view" id="v-ride">
+  <div>
+    <h2>Jog &amp; Ride</h2>
+    <p class="lede">Track a jog or a YouBike ride with your phone's GPS, or log one you already finished. Calories use MET values matched to your average speed and your weight.</p>
+  </div>
+  <div class="seg" role="group" aria-label="Cardio type">
+    <button id="mode-jog" aria-pressed="true" data-mode="jog">Jogging</button>
+    <button id="mode-bike" aria-pressed="false" data-mode="bike">YouBike</button>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <h3 id="liveTitle">Live jog</h3>
+      <span class="pill" id="gpsPill">GPS off</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="rDist">0.00</div><div class="k">km</div></div>
+      <div class="stat"><div class="v" id="rTime">0:00</div><div class="k">Time</div></div>
+      <div class="stat"><div class="v" id="rSpeed">0.0</div><div class="k" id="rSpeedK">Pace /km</div></div>
+      <div class="stat"><div class="v" id="rKcal">0</div><div class="k">kcal</div></div>
+    </div>
+    <div class="row">
+      <button class="primary" id="rideStart">Start jog</button>
+      <button id="rideStop" disabled>End &amp; save</button>
+    </div>
+    <p class="note" id="rideNote">Keep this screen open during the ride so GPS keeps tracking.</p>
+  </div>
+  <div class="panel">
+    <h3 id="logTitle">Log a finished jog</h3>
+    <div class="grid2">
+      <label for="mDist">Distance (km)<input id="mDist" type="number" min="0" step="0.1" value="3.0"></label>
+      <label for="mMin">Duration (min)<input id="mMin" type="number" min="1" step="1" value="20"></label>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <span id="mPreview" class="note"></span>
+      <button id="mSave">Save jog</button>
+    </div>
+  </div>
+  <div class="panel" id="jogTips">
+    <h3>Jogging tips</h3>
+    <ul class="flist">
+      <li><b>Start with run–walk</b><span>Jog 1 min, walk 2 min, repeat 6–8 times. Add jogging time each week.</span></li>
+      <li><b>Talk-test pace</b><span>You should be able to speak in short sentences. Gasping means slow down.</span></li>
+      <li><b>Beat the heat</b><span>In Taiwan, jog before 8 am or after sunset, and drink water before you go.</span></li>
+      <li><b>Good routes</b><span>Riverside parks and school tracks are flat, lit and away from scooters.</span></li>
+    </ul>
+  </div>
+  <div class="panel" id="bikePanel" hidden>
+    <div class="row" style="justify-content:space-between">
+      <h3>Nearby YouBike stations</h3>
+      <button id="findSt">Find near me</button>
+    </div>
+    <div class="stations" id="stations"><p class="note">Uses Taipei City's live YouBike 2.0 open data (bikes to rent / empty docks).</p></div>
+  </div>
+</section>
+
+<section class="view" id="v-food">
+  <div>
+    <h2>Food Guide</h2>
+    <p class="lede">What to eat often, what to cut down and what to keep as a rare treat, using foods you can actually find in Taiwan and at home.</p>
+  </div>
+  <div class="panel">
+    <h3>Your daily targets</h3>
+    <div class="stats">
+      <div class="stat"><div class="v" id="fWater">4.0</div><div class="k">Water, litres</div></div>
+      <div class="stat"><div class="v" id="fProt">72–96</div><div class="k">Protein, g</div></div>
+      <div class="stat"><div class="v">5</div><div class="k">Fruit + veg portions</div></div>
+      <div class="stat"><div class="v">&lt; 25</div><div class="k">Added sugar, g</div></div>
+    </div>
+    <p class="note">Protein is based on your weight. If you have diabetes, kidney or heart problems, follow your doctor's advice on water and protein instead.</p>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <h3>Water tracker</h3>
+      <label for="wGoal" style="flex-direction:row;align-items:center;gap:6px">Goal <input id="wGoal" type="number" min="1" max="6" step="0.1" value="4" style="width:72px"> L</label>
+    </div>
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <div class="stat" style="border:0;background:none;padding:0"><div class="v" id="wNow">0.00 L</div><div class="k" id="wLeft">4.0 L to go today</div></div>
+      <span class="pill" id="wGlasses">0 of 16 glasses</span>
+    </div>
+    <div class="wbar" role="progressbar" aria-label="Water today" aria-valuemin="0" aria-valuemax="100" id="wBar"><i id="wFill"></i></div>
+    <div class="row">
+      <button class="primary" id="w250">+ 1 glass (250 ml)</button>
+      <button id="w500">+ 1 bottle (500 ml)</button>
+      <button id="wUndo">Undo</button>
+    </div>
+    <p class="note">Sip through the day, about one glass every hour you are awake, instead of drinking a lot at once. Resets every morning.</p>
+  </div>
+  <div class="panel">
+    <label for="foodQ">Check a food
+      <input id="foodQ" type="search" placeholder="e.g. bubble tea, biryani, eggs" autocomplete="off"></label>
+    <div id="foodRes" class="flist"></div>
+  </div>
+  <div class="foodcols" id="foodCols"></div>
+  <div class="panel">
+    <h3>When to eat around a workout</h3>
+    <ul class="flist">
+      <li><b>1–2 hours before</b><span>Something light with carbs: a banana, oats, toast, or a roasted sweet potato from 7-Eleven.</span></li>
+      <li><b>Within 2 hours after</b><span>Protein plus carbs: 2 tea eggs and a sweet potato, chicken with rice, or daal with roti.</span></li>
+      <li><b>Skip right before training</b><span>Heavy oily meals like fried chicken or biryani. They sit in your stomach and cause cramps.</span></li>
+    </ul>
+  </div>
+  <div class="panel">
+    <h3>Ordering drinks in Taiwan</h3>
+    <ul class="flist">
+      <li><b>無糖 <span class="zh">wú táng</span></b><span>No sugar. The best choice for tea.</span></li>
+      <li><b>微糖 <span class="zh">wéi táng</span></b><span>Light sugar, roughly 30%. A good middle step if you are cutting down.</span></li>
+      <li><b>去冰 / 少冰</b><span>No ice / less ice. Does not change sugar, so still pick a low sugar level.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section class="view" id="v-plans">
+  <div>
+    <h2>No-Gym Plans</h2>
+    <p class="lede">Bodyweight routines sized for a dorm room or a 2 × 2 m patch of floor. Exercises marked AI can be counted by the camera coach.</p>
+  </div>
+  <div id="planList" class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))"></div>
+</section>
+
+<!-- PROGRESS -->
+<section class="view" id="v-progress">
+  <div class="row" style="justify-content:space-between">
+    <div><h2>Progress</h2><p class="lede">Last 7 days. Saved on this device only.</p></div>
+    <span class="pill sample" id="samplePill" hidden>Sample data</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="v" id="pKcal">0</div><div class="k">kcal / 7d</div></div>
+    <div class="stat"><div class="v" id="pMin">0</div><div class="k">Active min</div></div>
+    <div class="stat"><div class="v" id="pReps">0</div><div class="k">Reps</div></div>
+    <div class="stat"><div class="v" id="pKm">0</div><div class="k">Jog + bike km</div></div>
+  </div>
+  <div class="panel">
+    <h3>Calories burned per day</h3>
+    <div class="chart" id="chart"></div>
+    <div class="chartlabels" id="chartLabels"></div>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h3>History</h3><button class="danger" id="clearHist">Clear history</button></div>
+    <div class="scroll"><table><thead><tr><th>When</th><th>Activity</th><th class="num">Detail</th><th class="num">Min</th><th class="num">kcal</th></tr></thead><tbody id="histBody"></tbody></table></div>
+    <div class="row" id="confirmClear" hidden><span class="note">Delete every saved session?</span><button class="danger" id="yesClear">Delete all</button><button id="noClear">Keep</button></div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="view" id="v-road">
+  <div>
+    <h2>Build Roadmap</h2>
+    <p class="lede">This web app is the working MVP from your plan. Here is the path from this prototype to a store-ready Flutter app.</p>
+  </div>
+  <div class="panel road" id="road"></div>
+</section>
+</main>
+</div>
+
+<nav class="tabs" aria-label="Sections"><div class="in">
+  <button data-tab="train" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7m0 0-4 6m4-6 4 6M6 10h12"/></svg>Train</button>
+  <button data-tab="ride"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5 9 9h6l3.5 7.5M9 9 12 16.5h-6.5M14 6h2"/></svg>Cardio</button>
+  <button data-tab="food"><svg viewBox="0 0 24 24"><path d="M7 3v8m-3-8v5a3 3 0 0 0 6 0V3M7 11v10M17 21V3c-2.5 1-3.5 4-3.5 8h3.5"/></svg>Food</button>
+  <button data-tab="plans"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Plans</button>
+  <button data-tab="progress"><svg viewBox="0 0 24 24"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>Progress</button>
+  <button data-tab="road"><svg viewBox="0 0 24 24"><path d="M4 20 9 4m11 16L15 4m-3 2v2m0 4v2m0 4v2"/></svg>Roadmap</button>
+</div></nav>
+
+<script>
+/* ---------- storage helpers ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const $=id=>document.getElementById(id);
+const kgInput=$('kg');kgInput.value=store.get('hf_kg',60);
+kgInput.addEventListener('change',()=>{store.set('hf_kg',+kgInput.value||60);updateManual();});
+const kg=()=>Math.min(250,Math.max(25,+kgInput.value||60));
+const fmtTime=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),r=s%60;return m+':'+String(r).padStart(2,'0')};
+/* kcal = MET × 3.5 × kg ÷ 200 per minute (ACSM formula) */
+const kcalFor=(met,sec)=>met*3.5*kg()/200*(sec/60);
+
+/* ---------- tabs ---------- */
+const views={train:$('v-train'),ride:$('v-ride'),food:$('v-food'),plans:$('v-plans'),progress:$('v-progress'),road:$('v-road')};
+const ORDER=['train','ride','food','plans','progress','road'],pager=document.getElementById('pager');
+let curTab='train';
+function markTab(t){if(t===curTab&&document.querySelector('nav.tabs button[aria-current="page"]')?.dataset.tab===t)return;curTab=t;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===t?'page':'false'));
+  document.querySelectorAll('#dots i').forEach((d,i)=>d.classList.toggle('on',ORDER[i]===t));
+  if(t==='progress')renderProgress();window.scrollTo({top:0,behavior:'smooth'});
+  if(location.hash!=='#'+t)window.history.replaceState(null,'','#'+t);}
+let scrollT;pager.addEventListener('scroll',()=>{clearTimeout(scrollT);scrollT=setTimeout(()=>{const i=Math.round(pager.scrollLeft/pager.clientWidth);if(ORDER[i])markTab(ORDER[i])},80)},{passive:true});
+window.addEventListener('resize',()=>{pager.style.scrollBehavior='auto';pager.scrollLeft=ORDER.indexOf(curTab)*pager.clientWidth;pager.style.scrollBehavior=''});
+function showTab(t,instant){const i=ORDER.indexOf(t);if(i<0)return;
+  pager.scrollTo({left:i*pager.clientWidth,behavior:instant?'auto':'smooth'});markTab(t);return;
+  if(location.hash!=='#'+t)window.history.replaceState(null,'','#'+t);}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(views[h])showTab(h)});
+
+/* ---------- hist ---------- */
+function sampleHistory(){const now=Date.now(),d=864e5;return[
+ {t:now-6*d,type:'Squats',detail:'32 reps',min:6,kcal:31,reps:32,sample:1},
+ {t:now-5*d,type:'YouBike ride',detail:'5.1 km',min:21,kcal:84,km:5.1,sample:1},
+ {t:now-4*d,type:'Push-ups',detail:'24 reps',min:5,kcal:20,reps:24,sample:1},
+ {t:now-3*d-36e5*3,type:'Jogging',detail:'2.8 km',min:20,kcal:140,km:2.8,sample:1},
+ {t:now-3*d,type:'Jumping jacks',detail:'80 reps',min:4,kcal:34,reps:80,sample:1},
+ {t:now-2*d,type:'YouBike ride',detail:'3.4 km',min:14,kcal:56,km:3.4,sample:1},
+ {t:now-1*d,type:'Squats',detail:'45 reps',min:8,kcal:42,reps:45,sample:1}]}
+let hist=store.get('hf_hist',null);
+if(!hist){hist=sampleHistory();}
+function addSession(s){hist=hist.filter(h=>!h.sample);hist.push(s);store.set('hf_hist',hist);renderProgress();}
+function renderProgress(){
+  const isSample=hist.length&&hist.every(h=>h.sample);$('samplePill').hidden=!isSample;
+  const now=new Date();const days=[];for(let i=6;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push(d)}
+  const week=hist.filter(h=>h.t>=days[0].getTime());
+  $('pKcal').textContent=Math.round(week.reduce((a,h)=>a+h.kcal,0));
+  $('pMin').textContent=Math.round(week.reduce((a,h)=>a+h.min,0));
+  $('pReps').textContent=week.reduce((a,h)=>a+(h.reps||0),0);
+  $('pKm').textContent=week.reduce((a,h)=>a+(h.km||0),0).toFixed(1);
+  const totals=days.map(d=>{const e=d.getTime()+864e5;return Math.round(hist.filter(h=>h.t>=d.getTime()&&h.t<e).reduce((a,h)=>a+h.kcal,0))});
+  const max=Math.max(50,...totals);const names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  $('chart').innerHTML=totals.map((v,i)=>`<div class="bar${i===6?' today':''}"><b>${v||''}</b><i style="height:${v/max*100}%"></i></div>`).join('');
+  $('chartLabels').innerHTML=days.map((d,i)=>`<span>${i===6?'Today':names[d.getDay()]}</span>`).join('');
+  const rows=[...hist].sort((a,b)=>b.t-a.t).slice(0,30);
+  $('histBody').innerHTML=rows.length?rows.map(h=>{const d=new Date(h.t);return`<tr><td>${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}</td><td>${h.type}${h.sample?' <span class="pill sample">sample</span>':''}</td><td class="num">${h.detail}</td><td class="num">${h.min}</td><td class="num">${Math.round(h.kcal)}</td></tr>`}).join(''):'<tr><td colspan="5" class="note">No sessions yet. Finish a workout, jog or ride to see it here.</td></tr>';
+}
+$('clearHist').onclick=()=>{$('confirmClear').hidden=false};
+$('noClear').onclick=()=>{$('confirmClear').hidden=true};
+$('yesClear').onclick=()=>{hist=[];store.set('hf_hist',[]);$('confirmClear').hidden=true;renderProgress()};
+
+/* ---------- voice ---------- */
+let voiceOn=true,lastSpoke=0,lastPhrase='';
+$('voiceBtn').onclick=e=>{voiceOn=!voiceOn;e.target.textContent='Voice: '+(voiceOn?'on':'off');e.target.setAttribute('aria-pressed',voiceOn)};
+function say(text,force){
+  const now=performance.now();if(!voiceOn||!('speechSynthesis' in window))return;
+  if(!force&&(now-lastSpoke<2200||(text===lastPhrase&&now-lastSpoke<5000)))return;
+  lastSpoke=now;lastPhrase=text;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=1.05;speechSynthesis.speak(u)}catch(e){}
+}
+function cue(text,kind){const c=$('cue');c.textContent=text;c.className='cue'+(kind?' '+kind:'')}
+
+/* ---------- pose geometry ---------- */
+const EX={
+  squat:{name:'Squats',met:5.0,angleLabel:'Knee angle'},
+  pushup:{name:'Push-ups',met:3.8,angleLabel:'Elbow angle'},
+  jj:{name:'Jumping jacks',met:8.0,angleLabel:'Arm height'}
+};
+let exercise='squat';
+document.querySelectorAll('button[data-ex]').forEach(b=>b.addEventListener('click',()=>selectExercise(b.dataset.ex)));
+function selectExercise(ex){exercise=ex;document.querySelectorAll('button[data-ex]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.ex===ex));
+  $('sAngleK').textContent=EX[ex].angleLabel;resetCounter();}
+function angle(a,b,c){const r=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x);let d=Math.abs(r*180/Math.PI);return d>180?360-d:d}
+let W=640,H=480;
+const P=(lm,i)=>({x:lm[i].x*W,y:lm[i].y*H,v:lm[i].visibility??1});
+function side(lm){const L=[11,23,25,27,13,15].reduce((a,i)=>a+(lm[i].visibility??1),0),R=[12,24,26,28,14,16].reduce((a,i)=>a+(lm[i].visibility??1),0);
+  return L>=R?{sh:11,el:13,wr:15,hip:23,kn:25,an:27}:{sh:12,el:14,wr:16,hip:24,kn:26,an:28}}
+
+/* rep engine: a rep = metric falls below start, reaches depth, returns above top */
+let st={};function resetCounter(){st={reps:0,good:0,phase:'up',min:999,formBad:false,open:false,active:0,t0:null,last:null};
+  $('reps').textContent='0';$('sForm').textContent='–';$('sAngle').textContent='–';$('sTime').textContent='0:00';$('sKcal').textContent='0';cue('Ready when you are')}
+resetCounter();
+function countRep(goodForm){st.reps++;if(goodForm)st.good++;$('reps').textContent=st.reps;$('sForm').textContent=st.good;
+  say(goodForm?String(st.reps):st.reps+'. Watch your form',true);cue(goodForm?'Good rep':'Rep counted, fix form','good')}
+function analyze(lm){
+  const s=side(lm);let ok=true,msg=null;
+  if(exercise==='squat'){
+    const hip=P(lm,s.hip),kn=P(lm,s.kn),an=P(lm,s.an),sh=P(lm,s.sh);
+    if(Math.min(hip.v,kn.v,an.v)<0.5){cue('Step back so your legs are in view','bad');say('Step back so I can see your legs');return false}
+    const k=angle(hip,kn,an);$('sAngle').textContent=Math.round(k)+'°';
+    const lean=Math.abs(Math.atan2(sh.x-hip.x,hip.y-sh.y)*180/Math.PI);
+    if(st.phase!=='up'&&lean>50){ok=false;st.formBad=true;msg='Keep your chest up'}
+    stepEngine(k,140,100,160,'Go lower',ok,msg);
+  }else if(exercise==='pushup'){
+    const sh=P(lm,s.sh),el=P(lm,s.el),wr=P(lm,s.wr),hip=P(lm,s.hip),an=P(lm,s.an);
+    if(Math.min(sh.v,el.v,wr.v)<0.5){cue('Turn sideways to the camera','bad');say('Turn sideways so I can see your arm');return false}
+    const e=angle(sh,el,wr);$('sAngle').textContent=Math.round(e)+'°';
+    if(hip.v>0.5&&an.v>0.5){const body=angle(sh,hip,an);if(body<155){ok=false;st.formBad=true;msg='Keep your back straight'}}
+    stepEngine(e,150,100,155,'Go lower, chest to the floor',ok,msg);
+  }else{
+    const ls=P(lm,11),rs=P(lm,12),lw=P(lm,15),rw=P(lm,16),la=P(lm,27),ra=P(lm,28),nose=P(lm,0);
+    if(Math.min(la.v,ra.v,lw.v,rw.v)<0.5){cue('Step back so your whole body is in view','bad');say('Step back, I need to see your whole body');return false}
+    const shW=Math.abs(ls.x-rs.x)||1,feet=Math.abs(la.x-ra.x)/shW,armsUp=lw.y<nose.y&&rw.y<nose.y,armsDown=lw.y>ls.y&&rw.y>rs.y;
+    const lift=((ls.y+rs.y)/2-(lw.y+rw.y)/2)/shW;$('sAngle').textContent=lift.toFixed(1);
+    if(!st.open&&armsUp&&feet>1.4){st.open=true;st.formBad=false;cue('Open','good')}
+    else if(st.open&&armsDown&&feet<1.1){st.open=false;countRep(true)}
+    else if(st.open&&armsUp&&feet<1.1){cue('Jump your feet wider','bad');say('Feet wider')}
+  }
+  return true;
+}
+function stepEngine(m,start,depth,top,shallowMsg,ok,formMsg){
+  if(st.phase==='up'&&m<start){st.phase='moving';st.min=m;st.formBad=false}
+  if(st.phase==='moving'){st.min=Math.min(st.min,m);
+    if(formMsg){cue(formMsg,'bad');say(formMsg)}
+    else if(st.min<depth)cue('Good depth, now up','good');
+    if(m>top){if(st.min<depth)countRep(!st.formBad);else{cue(shallowMsg,'bad');say(shallowMsg,true)}st.phase='up'}}
+}
+
+/* ---------- drawing ---------- */
+const cv=$('overlay'),ctx=cv.getContext('2d');
+const BONES=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,31],[28,32]];
+function draw(lm){ctx.clearRect(0,0,cv.width,cv.height);if(!lm)return;
+  const good=$('cue').classList.contains('bad')?'#FF6B5E':'#3CCB80';
+  ctx.lineWidth=Math.max(3,W/160);ctx.strokeStyle=good;ctx.lineCap='round';
+  for(const[a,b]of BONES){if((lm[a].visibility??1)<.4||(lm[b].visibility??1)<.4)continue;ctx.beginPath();ctx.moveTo(lm[a].x*W,lm[a].y*H);ctx.lineTo(lm[b].x*W,lm[b].y*H);ctx.stroke()}
+  ctx.fillStyle='#fff';for(const i of[11,12,13,14,15,16,23,24,25,26,27,28]){if((lm[i].visibility??1)<.4)continue;ctx.beginPath();ctx.arc(lm[i].x*W,lm[i].y*H,W/110,0,7);ctx.fill()}}
+
+/* ---------- MediaPipe ---------- */
+const MP='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const MODEL='https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+let landmarker=null,running=false,stream=null,rafId=0,lastVideoTime=-1;
+async function loadModel(){if(landmarker)return landmarker;$('aiStatus').textContent='Loading AI pose model…';
+  const vision=await import(MP);
+  const files=await vision.FilesetResolver.forVisionTasks(MP+'/wasm');
+  try{landmarker=await vision.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:MODEL,delegate:'GPU'},runningMode:'VIDEO',numPoses:1})}
+  catch(e){landmarker=await vision.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:MODEL,delegate:'CPU'},runningMode:'VIDEO',numPoses:1})}
+  $('aiStatus').textContent='AI model ready. Tracking runs on this device.';return landmarker}
+function stageMsg(title,text){$('stageMsg').hidden=!title;$('guide').hidden=!!title;if(title){$('stageMsg').querySelector('strong').textContent=title;$('stageMsgText').textContent=text}}
+async function begin(sourceSetup){
+  try{stageMsg('Starting…','Loading the pose model and video.');await loadModel()}
+  catch(e){stageMsg('AI model could not load','The AI model downloads once (about 5 MB) and needs internet. Check your connection and open BeekaFit-Pro.html in Chrome, then try again.');$('aiStatus').textContent='AI model not loaded. The other tabs still work without it.';return}
+  try{await sourceSetup()}catch(e){stageMsg('Camera unavailable',e&&e.name==='NotAllowedError'?'Camera permission was denied. Allow it in your browser settings and try again.':'This view cannot open the camera. Open BeekaFit-Pro.html directly in Chrome, or analyze a recorded video instead.');return}
+  const v=$('video');W=v.videoWidth||640;H=v.videoHeight||480;cv.width=W;cv.height=H;
+  stageMsg(null);resetCounter();running=true;$('stopSave').disabled=false;$('startCam').textContent='Restart';
+  say('Get into position. I will count your '+EX[exercise].name.toLowerCase(),true);loop();
+}
+function loop(){if(!running)return;const v=$('video');
+  if(v.readyState>=2&&v.currentTime!==lastVideoTime){lastVideoTime=v.currentTime;
+    const now=performance.now();const res=landmarker.detectForVideo(v,now);const lm=res.landmarks&&res.landmarks[0];
+    if(lm){const tracked=analyze(lm);if(tracked){if(st.last)st.active+=Math.min(1,(now-st.last)/1000);st.last=now}else st.last=null;draw(lm)}
+    else{st.last=null;draw(null);cue('No body detected. Step into the frame','bad')}
+    $('sTime').textContent=fmtTime(st.active);$('sKcal').textContent=Math.round(kcalFor(EX[exercise].met,st.active));}
+  if(v.ended){finish();return}
+  rafId=requestAnimationFrame(loop)}
+function stopSources(){running=false;cancelAnimationFrame(rafId);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}const v=$('video');v.pause()}
+function finish(){stopSources();$('stopSave').disabled=true;
+  if(st.reps>0||st.active>20){addSession({t:Date.now(),type:EX[exercise].name,detail:st.reps+' reps',reps:st.reps,min:Math.max(1,Math.round(st.active/60)),kcal:Math.round(kcalFor(EX[exercise].met,st.active))});
+    stageMsg('Saved: '+st.reps+' '+EX[exercise].name.toLowerCase(),st.good+' with good form · '+Math.round(kcalFor(EX[exercise].met,st.active))+' kcal. Check your heart rate below.');say('Workout saved. '+st.reps+' reps. Nice work. Now check your heart rate.',true);setTimeout(()=>$('vitals').scrollIntoView({behavior:'smooth',block:'start'}),600)}
+  else stageMsg('Stopped','No reps were counted, so nothing was saved.')}
+$('stopSave').onclick=finish;
+$('startCam').onclick=()=>{stopSources();const v=$('video');v.classList.add('mirror');cv.classList.add('mirror');
+  begin(async()=>{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:960},height:{ideal:720}},audio:false});
+    v.srcObject=stream;v.removeAttribute('src');await v.play();navigator.wakeLock?.request('screen').catch(()=>{})})};
+$('vidFile').onchange=e=>{const f=e.target.files[0];if(!f)return;stopSources();const v=$('video');v.classList.remove('mirror');cv.classList.remove('mirror');
+  begin(async()=>{v.srcObject=null;v.src=URL.createObjectURL(f);await new Promise(r=>v.onloadeddata=r);await v.play()});e.target.value=''};
+
+/* ---------- RIDE ---------- */
+const cycMET=kmh=>kmh<10?3.5:kmh<16?4.0:kmh<19?6.8:kmh<22?8.0:10.0;
+/* running METs, Compendium of Physical Activities: brisk walk → jog → run */
+const jogMET=kmh=>kmh<5?3.5:kmh<6.5?4.3:kmh<8?7.0:kmh<9.5?8.3:kmh<11?9.8:kmh<12.5?11.0:11.8;
+let mode='jog';const metFor=kmh=>mode==='jog'?jogMET(kmh):cycMET(kmh);
+const MODES={jog:{noun:'jog',type:'Jogging',d:'3.0',m:'20'},bike:{noun:'ride',type:'YouBike ride',d:'4.2',m:'18'}};
+const paceStr=kmh=>{if(kmh<0.5)return'–';const sec=Math.round(3600/kmh);return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')};
+function setMode(m){if(ride)return;mode=m;const M=MODES[m];
+  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
+  $('liveTitle').textContent='Live '+M.noun;$('rideStart').textContent='Start '+M.noun;$('logTitle').textContent='Log a finished '+M.noun;$('mSave').textContent='Save '+M.noun;
+  $('rSpeedK').textContent=m==='jog'?'Pace /km':'Avg km/h';$('rSpeed').textContent=m==='jog'?'–':'0.0';
+  $('mDist').value=M.d;$('mMin').value=M.m;$('jogTips').hidden=m!=='jog';$('bikePanel').hidden=m!=='bike';
+  $('rideNote').textContent='Keep this screen open during the '+M.noun+' so GPS keeps tracking.';updateManual()}
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+const hav=(a,b)=>{const R=6371,t=x=>x*Math.PI/180,dLa=t(b.lat-a.lat),dLo=t(b.lon-a.lon);const h=Math.sin(dLa/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+let ride=null;
+function rideTick(){if(!ride)return;const sec=(Date.now()-ride.t0)/1000,sp=sec>0?ride.km/(sec/3600):0;
+  $('rDist').textContent=ride.km.toFixed(2);$('rTime').textContent=fmtTime(sec);$('rSpeed').textContent=mode==='jog'?paceStr(sp):sp.toFixed(1);$('rKcal').textContent=Math.round(kcalFor(metFor(sp),sec))}
+$('rideStart').onclick=()=>{if(!('geolocation' in navigator)){$('rideNote').textContent='This browser has no GPS access. Log it manually below.';return}
+  ride={t0:Date.now(),km:0,last:null,timer:setInterval(rideTick,1000)};$('rideStart').disabled=true;$('rideStop').disabled=false;document.querySelectorAll('[data-mode]').forEach(b=>b.disabled=true);$('gpsPill').textContent='Waiting for GPS';
+  ride.watch=navigator.geolocation.watchPosition(p=>{const pt={lat:p.coords.latitude,lon:p.coords.longitude};$('gpsPill').textContent='GPS ±'+Math.round(p.coords.accuracy)+' m';$('gpsPill').className='pill on';
+      if(p.coords.accuracy>40)return;if(ride.last){const d=hav(ride.last,pt);if(d>0.004&&d<0.5)ride.km+=d}ride.last=pt},
+    err=>{$('gpsPill').textContent='GPS blocked';$('gpsPill').className='pill';$('rideNote').textContent='Location access was refused here. Open BeekaFit-Pro.html directly in your phone browser, or log the ride manually below.'},
+    {enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+  navigator.wakeLock?.request('screen').catch(()=>{})};
+$('rideStop').onclick=()=>{if(!ride)return;navigator.geolocation.clearWatch(ride.watch);clearInterval(ride.timer);
+  const sec=(Date.now()-ride.t0)/1000,sp=ride.km/(sec/3600||1);
+  if(ride.km>0.05)addSession({t:Date.now(),type:MODES[mode].type,detail:ride.km.toFixed(1)+' km',km:+ride.km.toFixed(2),min:Math.max(1,Math.round(sec/60)),kcal:Math.round(kcalFor(metFor(sp),sec))});
+  $('rideNote').textContent=ride.km>0.05?'Saved to Progress.':'Under 50 m, so nothing was saved.';document.querySelectorAll('[data-mode]').forEach(b=>b.disabled=false);
+  ride=null;$('rideStart').disabled=false;$('rideStop').disabled=true;$('gpsPill').textContent='GPS off';$('gpsPill').className='pill'};
+function updateManual(){const km=+$('mDist').value||0,min=+$('mMin').value||0,sp=min?km/(min/60):0;
+  $('mPreview').textContent=min?`${mode==='jog'?paceStr(sp)+' /km':sp.toFixed(1)+' km/h'} · about ${Math.round(kcalFor(metFor(sp),min*60))} kcal`:''}
+['mDist','mMin'].forEach(id=>$(id).addEventListener('input',updateManual));setMode('jog');
+$('mSave').onclick=()=>{const km=+$('mDist').value||0,min=+$('mMin').value||0;if(!km||!min)return;const sp=km/(min/60);
+  addSession({t:Date.now(),type:MODES[mode].type,detail:km.toFixed(1)+' km',km,min:Math.round(min),kcal:Math.round(kcalFor(metFor(sp),min*60))});
+  $('mPreview').textContent='Saved to Progress.'};
+$('findSt').onclick=()=>{const box=$('stations');box.innerHTML='<p class="note">Finding your location…</p>';
+  if(!('geolocation' in navigator)){box.innerHTML='<p class="note">No location access in this browser.</p>';return}
+  navigator.geolocation.getCurrentPosition(async p=>{const me={lat:p.coords.latitude,lon:p.coords.longitude};box.innerHTML='<p class="note">Loading live station data…</p>';
+    try{const r=await fetch('https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediate.json');const data=await r.json();
+      const near=data.map(s=>({name:(s.sna||'').replace('YouBike2.0_',''),en:(s.snaen||'').replace('YouBike2.0_',''),rent:s.available_rent_bikes,ret:s.available_return_bikes,d:hav(me,{lat:+s.latitude,lon:+s.longitude})})).sort((a,b)=>a.d-b.d).slice(0,6);
+      box.innerHTML=near.map(s=>`<div class="station"><div><div>${s.name}</div><div class="note">${s.en} · ${s.d<1?Math.round(s.d*1000)+' m':s.d.toFixed(1)+' km'}</div></div><div class="n">${s.rent} bikes<br><span class="note">${s.ret} docks</span></div></div>`).join('')+(near[0]&&near[0].d>15?'<p class="note">You seem to be outside Taipei. This feed covers Taipei City only.</p>':'');
+    }catch(e){box.innerHTML='<p class="note">Live station data could not load. Check your internet connection and try again.</p>'}},
+  ()=>{box.innerHTML='<p class="note">Location access was refused, so nearby stations cannot be shown.</p>'},{timeout:15000})};
+
+/* ---------- VITALS: heart rate + blood pressure ---------- */
+let vit=store.get('hf_vitals',[]);
+function renderVitals(){const rows=[...vit].sort((a,b)=>b.t-a.t).slice(0,8);
+  $('vitBody').innerHTML=rows.length?rows.map(v=>{const d=new Date(v.t);return`<tr><td>${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})} ${d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}</td><td class="num" style="text-align:left">${v.kind==='hr'?v.bpm+' bpm':v.sys+'/'+v.dia+' mmHg'}</td><td>${v.kind==='hr'?hrLabel(v.bpm):bpCategory(v.sys,v.dia).label}</td></tr>`}).join(''):'<tr><td colspan="3" class="note">No readings yet.</td></tr>'}
+function saveVital(v){vit.push(v);store.set('hf_vitals',vit);renderVitals()}
+const hrLabel=b=>b<50?'Low, recheck at rest':b<=100?'Normal resting range':b<=160?'Normal after exercise':b<=190?'High, rest and recheck':'Very high, stop and rest';
+/* AHA categories */
+function bpCategory(s,d){if(s>180||d>120)return{label:'Hypertensive crisis: get medical help now',cls:'bad'};
+  if(s>=140||d>=90)return{label:'High (stage 2): see a doctor',cls:'bad'};
+  if(s>=130||d>=80)return{label:'High (stage 1): recheck and talk to a doctor',cls:'warn'};
+  if(s>=120)return{label:'Elevated',cls:'warn'};
+  if(s<90||d<60)return{label:'Low: drink water, sit down, recheck',cls:'warn'};
+  return{label:'Normal',cls:'good'}}
+function bpPreview(){const s=+$('bpSys').value,d=+$('bpDia').value,c=$('bpCat');
+  if(!s||!d){c.className='bpcat';c.textContent='Enter both numbers to see the category.';return null}
+  if(s<60||s>260||d<30||d>160||d>=s){c.className='bpcat bad';c.textContent='Check the numbers. The upper number must be higher than the lower one.';return null}
+  const k=bpCategory(s,d);c.className='bpcat '+k.cls;c.textContent=s+'/'+d+' mmHg · '+k.label;return{s,d}}
+['bpSys','bpDia'].forEach(id=>$(id).addEventListener('input',bpPreview));
+$('bpSave').onclick=()=>{const v=bpPreview();if(!v)return;saveVital({t:Date.now(),kind:'bp',sys:v.s,dia:v.d});$('bpCat').textContent+=' · Saved'};
+document.querySelectorAll('[data-hr]').forEach(b=>b.addEventListener('click',()=>{const m=b.dataset.hr;
+  document.querySelectorAll('[data-hr]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.hr===m));$('hrCamBox').hidden=m!=='cam';$('hrManBox').hidden=m!=='man';if(m!=='cam')stopPPG('Stopped')}));
+/* manual pulse count */
+let manIv=null;
+$('manStart').onclick=()=>{clearInterval(manIv);let t=15;$('manTimer').firstChild.textContent='15';$('manStart').disabled=true;say('Start counting',true);
+  manIv=setInterval(()=>{t--;$('manTimer').firstChild.textContent=String(t);if(t<=0){clearInterval(manIv);$('manStart').disabled=false;say('Stop. Enter your count.',true);$('manBeats').focus()}},1000)};
+$('manSave').onclick=()=>{const n=+$('manBeats').value;if(!n||n<5||n>60){$('manOut').textContent='Enter the number of beats you counted in 15 seconds (between 5 and 60).';return}
+  const bpm=n*4;saveVital({t:Date.now(),kind:'hr',bpm});$('manOut').textContent=bpm+' bpm · '+hrLabel(bpm)+' · Saved'};
+/* camera fingertip PPG: average red brightness rises and falls with each heartbeat */
+let ppg=null;const pc=$('ppgCanvas'),pctx=pc.getContext('2d');
+function stopPPG(msg){if(!ppg)return;cancelAnimationFrame(ppg.raf);ppg.stream&&ppg.stream.getTracks().forEach(t=>t.stop());ppg=null;
+  $('hrStart').disabled=false;$('hrStop').disabled=true;if(msg)$('hrStatus').textContent=msg}
+$('hrStop').onclick=()=>stopPPG('Stopped');
+function bpmFrom(samples){if(samples.length<60)return null;
+  const ts=samples.map(s=>s.t),v=samples.map(s=>s.v);
+  const sm=v.map((_,i)=>{let a=0,n=0;for(let j=Math.max(0,i-2);j<=Math.min(v.length-1,i+2);j++){a+=v[j];n++}return a/n});
+  const det=sm.map((x,i)=>{const t0=ts[i];let a=0,n=0;for(let j=i;j>=0&&t0-ts[j]<750;j--){a+=sm[j];n++}for(let j=i+1;j<sm.length&&ts[j]-t0<750;j++){a+=sm[j];n++}return x-a/n});
+  const sd=Math.sqrt(det.reduce((a,x)=>a+x*x,0)/det.length)||1;const peaks=[];
+  for(let i=2;i<det.length-2;i++){if(det[i]>0.3*sd&&det[i]>=det[i-1]&&det[i]>=det[i+1]&&det[i]>det[i-2]&&det[i]>det[i+2]){if(!peaks.length||ts[i]-ts[peaks[peaks.length-1]]>300)peaks.push(i)}}
+  if(peaks.length<6)return null;const iv=[];for(let i=1;i<peaks.length;i++)iv.push(ts[peaks[i]]-ts[peaks[i-1]]);
+  iv.sort((a,b)=>a-b);const med=iv[Math.floor(iv.length/2)];const bpm=Math.round(60000/med);return bpm>=40&&bpm<=200?bpm:null}
+function drawPPG(samples){const w=pc.width,h=pc.height;pctx.clearRect(0,0,w,h);const last=samples.slice(-180);if(last.length<2)return;
+  const vs=last.map(s=>s.v),mn=Math.min(...vs),mx=Math.max(...vs),rg=(mx-mn)||1;
+  pctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--bad').trim()||'#D63B2F';pctx.lineWidth=3;pctx.beginPath();
+  last.forEach((s,i)=>{const x=i/(180-1)*w,y=h-8-((s.v-mn)/rg)*(h-16);i?pctx.lineTo(x,y):pctx.moveTo(x,y)});pctx.stroke()}
+$('hrStart').onclick=async()=>{stopSources();stopPPG();$('hrNum').firstChild.textContent='–';
+  if(!navigator.mediaDevices?.getUserMedia){$('hrStatus').textContent='This browser cannot open the camera. Use "Count by hand".';return}
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:320},height:{ideal:240}},audio:false})}
+  catch(e){$('hrStatus').textContent=e&&e.name==='NotAllowedError'?'Camera permission was denied. Allow it, or use "Count by hand".':'Camera is not available here. Use "Count by hand".';return}
+  const track=stream.getVideoTracks()[0];let torch=false;try{await track.applyConstraints({advanced:[{torch:true}]});torch=true}catch(e){}
+  const v=$('ppgVideo');v.srcObject=stream;try{await v.play()}catch(e){}
+  const off=document.createElement('canvas');off.width=32;off.height=24;const octx=off.getContext('2d',{willReadFrequently:true});
+  ppg={stream,samples:[],start:0,raf:0};$('hrStart').disabled=true;$('hrStop').disabled=false;
+  $('hrStatus').textContent=torch?'Place your finger on the camera':'Place your finger on the camera. No flash on this phone, so sit near a bright light.';
+  const DUR=20000;
+  const tick=()=>{if(!ppg)return;if(v.readyState>=2){octx.drawImage(v,0,0,32,24);const d=octx.getImageData(0,0,32,24).data;let r=0,g=0;for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1]}r/=d.length/4;g/=d.length/4;
+      const now=performance.now(),covered=r>90&&r>g*1.6;
+      if(!covered){ppg.samples=[];ppg.start=0;$('hrStatus').textContent='Cover the camera'+(torch?' and flash':'')+' completely with your fingertip';}
+      else{if(!ppg.start){ppg.start=now;$('hrStatus').textContent='Hold still…'}ppg.samples.push({t:now,v:r});drawPPG(ppg.samples);
+        const el=now-ppg.start;if(el>6000){const b=bpmFrom(ppg.samples.slice(-300));if(b)$('hrNum').firstChild.textContent=String(b)}
+        $('hrStatus').textContent='Hold still… '+Math.max(0,Math.ceil((DUR-el)/1000))+' s';
+        if(el>=DUR){const b=bpmFrom(ppg.samples);stopPPG();if(b){$('hrNum').firstChild.textContent=String(b);$('hrStatus').textContent=hrLabel(b)+' · Saved';saveVital({t:Date.now(),kind:'hr',bpm:b});say('Your heart rate is '+b,true)}
+          else{$('hrNum').firstChild.textContent='–';$('hrStatus').textContent='Could not get a clear reading. Press a little softer, keep still and try again, or count by hand.'}return}}}
+    ppg.raf=requestAnimationFrame(tick)};tick()};
+renderVitals();
+
+/* ---------- FOOD ---------- */
+const FOODS=[
+ ['eat','Boiled or tea eggs','茶葉蛋 · cheap protein at any 7-Eleven or FamilyMart'],
+ ['eat','Roasted sweet potato','烤地瓜 · filling carbs with fibre, great after a workout'],
+ ['eat','Grilled chicken breast','Lean protein. Convenience-store packs are ready to eat'],
+ ['eat','Tofu and unsweetened soy milk','無糖豆漿 · plant protein and calcium'],
+ ['eat','Daal and chana','Protein plus fibre. Cook with less oil and ghee'],
+ ['eat','Whole-wheat roti','More fibre than naan or paratha'],
+ ['eat','Fish','Steamed or grilled, not fried'],
+ ['eat','Vegetables and sabzi','Fill half your plate. Stir-fried greens from a 自助餐 buffet count'],
+ ['eat','Fruit: guava, banana, papaya','Whole fruit, not juice. Guava is cheap and high in vitamin C'],
+ ['eat','Oats','Slow energy before a workout'],
+ ['eat','Plain yogurt or dahi','Protein and good bacteria. Choose unsweetened'],
+ ['eat','Edamame','毛豆 · high-protein snack'],
+ ['eat','Nuts','A small handful a day. Easy to overeat'],
+ ['eat','Water','Your main drink. Carry a bottle'],
+ ['eat','Brown rice or 五穀飯','Multigrain rice keeps you full longer than white rice'],
+ ['limit','White rice, large portions','Keep it to one bowl and add protein and vegetables'],
+ ['limit','Braised pork rice','滷肉飯 · fatty pork. A small bowl now and then'],
+ ['limit','Biryani and pulao','Oily and heavy. Smaller portion with raita and salad'],
+ ['limit','Paratha','Fried in ghee. Swap for roti most days'],
+ ['limit','Beef noodle soup','牛肉麵 · very salty broth. Leave most of the soup'],
+ ['limit','Instant noodles','High salt, low protein. Add an egg and vegetables if you have them'],
+ ['limit','Fruit juice','Sugar without the fibre. Eat the fruit instead'],
+ ['limit','Chai with lots of sugar','Cut to half a spoon, or less, each week'],
+ ['limit','Pan-fried dumplings','鍋貼 · steamed 水餃 are the lighter choice'],
+ ['limit','Red meat','A few times a week, not daily'],
+ ['limit','White bread and buns','饅頭 / 麵包 · pair with eggs or soy milk'],
+ ['avoid','Full-sugar bubble milk tea','珍珠奶茶 · can pass a whole day of added sugar. Order 無糖 or 微糖'],
+ ['avoid','Fried chicken cutlet','雞排 · deep-fried and very high in calories'],
+ ['avoid','Samosa, pakora, jalebi','Deep-fried, often in reused oil'],
+ ['avoid','Sugary soda','Empty calories. Try sparkling water'],
+ ['avoid','Energy drinks','Sugar and caffeine spikes, poor sleep'],
+ ['avoid','Mithai and desserts','Keep for Eid and special days'],
+ ['avoid','Chips and packaged snacks','Salty and easy to eat a whole bag'],
+ ['avoid','Late-night fried snacks','鹽酥雞 · the night-market fried basket'],
+ ['avoid','Processed meat','Sausages, hot dogs and nuggets'],
+];
+const LBL={eat:'Eat often',limit:'Cut down',avoid:'Rare treat only'};
+$('foodCols').innerHTML=['eat','limit','avoid'].map(k=>`<div class="panel fcol ${k}"><h3>${LBL[k]}</h3><ul class="flist">${FOODS.filter(f=>f[0]===k).map(f=>`<li><b>${f[1]}</b><span>${f[2]}</span></li>`).join('')}</ul></div>`).join('');
+const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+let wGoal=store.get('hf_wgoal',4),water=store.get('hf_water',{day:dayKey(),log:[]});
+if(water.day!==dayKey())water={day:dayKey(),log:[]};
+$('wGoal').value=wGoal;
+function renderWater(){if(water.day!==dayKey())water={day:dayKey(),log:[]};
+  const ml=water.log.reduce((a,b)=>a+b,0),goal=wGoal*1000,pct=Math.min(100,ml/goal*100);
+  $('wNow').textContent=(ml/1000).toFixed(2)+' L';
+  $('wLeft').textContent=ml>=goal?'Goal reached today':((goal-ml)/1000).toFixed(1)+' L to go today';
+  $('wGlasses').textContent=Math.floor(ml/250)+' of '+Math.ceil(goal/250)+' glasses';
+  $('wFill').style.width=pct+'%';$('wBar').classList.toggle('full',ml>=goal);$('wBar').setAttribute('aria-valuenow',Math.round(pct));
+  $('fWater').textContent=(+wGoal).toFixed(1);$('wUndo').disabled=!water.log.length;store.set('hf_water',water)}
+const addWater=ml=>{water.log.push(ml);renderWater()};
+$('w250').onclick=()=>addWater(250);$('w500').onclick=()=>addWater(500);
+$('wUndo').onclick=()=>{water.log.pop();renderWater()};
+$('wGoal').addEventListener('change',()=>{wGoal=Math.min(6,Math.max(1,+$('wGoal').value||4));$('wGoal').value=wGoal;store.set('hf_wgoal',wGoal);renderWater()});
+renderWater();
+function updateTargets(){$('fProt').textContent=Math.round(kg()*1.2)+'–'+Math.round(kg()*1.6)}
+updateTargets();kgInput.addEventListener('change',updateTargets);
+$('foodQ').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();const box=$('foodRes');if(!q){box.innerHTML='';return}
+  const hits=FOODS.filter(f=>(f[1]+' '+f[2]).toLowerCase().includes(q)).slice(0,6);
+  box.innerHTML=hits.length?hits.map(f=>`<li><b><span class="tag ${f[0]}">${LBL[f[0]]}</span> ${f[1]}</b><span>${f[2]}</span></li>`).join(''):'<li><span>Not in the list yet. General rule: grilled, steamed or boiled beats fried, and less sugar is always better.</span></li>'});
+
+/* ---------- PLANS ---------- */
+const PLANS=[
+ {name:'Dorm Room Starter',min:15,level:'Beginner',kcal:'≈ 90',items:[['Jumping jacks','3 × 30 s','jj'],['Squats','3 × 12','squat'],['Knee push-ups','3 × 8','pushup'],['Plank','3 × 20 s'],['Glute bridge','2 × 15']],start:'squat'},
+ {name:'Between-Classes Burst',min:7,level:'Any level',kcal:'≈ 55',items:[['Jumping jacks','60 s','jj'],['Squats','20','squat'],['Push-ups','10','pushup'],['Jumping jacks','60 s','jj'],['Squats','20','squat']],start:'jj'},
+ {name:'Full Body Builder',min:25,level:'Intermediate',kcal:'≈ 170',items:[['Squats','4 × 15','squat'],['Push-ups','4 × 12','pushup'],['Reverse lunges','3 × 10 / leg'],['Jumping jacks','3 × 45 s','jj'],['Plank shoulder taps','3 × 20'],['Wall sit','2 × 40 s']],start:'pushup'},
+ {name:'Riverside Jog',min:25,level:'Beginner cardio',kcal:'≈ 200',items:[['Brisk walk warm-up','5 min'],['Jog 1 min / walk 2 min','× 6'],['Easy walk cool-down','5 min'],['Calf and hamstring stretch','3 min']],jog:true},
+ {name:'Rest-Day Ride',min:30,level:'Easy cardio',kcal:'≈ 150',items:[['YouBike to campus or a riverside park','20–30 min'],['Easy pace, 12–16 km/h',''],['Stretch calves and hips after','5 min']],ride:true}
+];
+$('planList').innerHTML=PLANS.map((p,i)=>`<div class="panel plan"><div class="meta"><span class="pill">${p.min} min</span><span class="pill">${p.level}</span><span class="pill">${p.kcal} kcal at 60 kg</span></div><h3>${p.name}</h3><ol>${p.items.map(it=>`<li>${it[0]}${it[1]?` <span class="note">· ${it[1]}</span>`:''}${it[2]?' <span class="pill on">AI</span>':''}</li>`).join('')}</ol><button class="primary" data-plan="${i}">${p.jog?'Open jog tracker':p.ride?'Open ride tracker':'Start with the coach'}</button></div>`).join('');
+$('planList').addEventListener('click',e=>{const b=e.target.closest('button[data-plan]');if(!b)return;const p=PLANS[+b.dataset.plan];
+  if(p.jog){setMode('jog');showTab('ride')}else if(p.ride){setMode('bike');showTab('ride')}else{selectExercise(p.start);showTab('train')}});
+
+/* ---------- ROADMAP ---------- */
+const ROAD=[
+ {done:1,t:'Prototype the core loop (this app)',d:['MediaPipe Pose Landmarker running on-device in the browser','Rep counters from joint angles: knee (squat), elbow + body line (push-up), arm/feet spread (jumping jack)','Spoken cues: "Go lower", "Keep your back straight", "Keep your chest up"','GPS jogging and YouBike tracking with MET-based calories, live Taipei YouBike stations','Food guide with water tracker, and an after-workout heart rate (camera or by hand) and blood pressure log','All data saved on the phone (local history)']},
+ {t:'Test with 5–10 classmates',d:['Host this file free on GitHub Pages or Netlify Drop so phones get HTTPS (required for camera and GPS)','Record where counting fails: lighting, camera angle, loose clothing','Tune the angle thresholds in <code>stepEngine()</code> from real data']},
+ {t:'Design the real app in Figma',d:['Screens: onboarding (weight, goal), home, camera, plan picker, ride, progress','Keep the full-body framing guide and big rep number from the prototype']},
+ {t:'Build the mobile app in Flutter',d:['Camera + pose: <code>camera</code> and <code>google_mlkit_pose_detection</code> packages (both on-device)','Port the angle math and rep engine from this file unchanged; it is plain arithmetic','Speech: <code>flutter_tts</code> · GPS: <code>geolocator</code>']},
+ {t:'Accounts and cloud sync',d:['Firebase Auth for login, Firestore for profiles and workout history','Store only numbers (reps, minutes, kcal), never camera frames']},
+ {t:'YouBike for all of Taiwan',d:['Taipei feed is used here; for New Taipei, Taichung, Kaohsiung and others use the TDX transport data platform (free API key)','Ideas: suggest a station near home, auto-start the ride tracker when a ride begins']},
+ {t:'Beta launch',d:['TestFlight (iOS) and Play Console internal testing','Add a privacy note: video is processed on the phone and never uploaded']}
+];
+$('road').innerHTML=ROAD.map((r,i)=>`<div class="phase${r.done?' done':''}"><div class="dot">${r.done?'✓':i+1}</div><div><h3>${r.t}</h3><ul>${r.d.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`).join('');
+
+/* ---------- boot ---------- */
+renderProgress();const h0=location.hash.slice(1);if(views[h0])requestAnimationFrame(()=>showTab(h0,true));
+</script>
+
+</body></html>
